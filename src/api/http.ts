@@ -6,14 +6,15 @@ import axios from "axios";
  * - Handles auth failures globally
  */
 const http = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || "https://todoapi-tcbd.onrender.com",
+    baseURL: "/", // Use relative path for both dev and prod
     headers: {
         "Content-Type": "application/json",
     },
 });
 
-// Debug: Log the actual base URL being used
-console.log("API Base URL:", import.meta.env.VITE_API_BASE_URL);
+// Debug: Log the actual configuration
+console.log("Environment:", import.meta.env.MODE);
+console.log("API Base URL:", http.defaults.baseURL);
 
 /**
  * Request interceptor – attach JWT
