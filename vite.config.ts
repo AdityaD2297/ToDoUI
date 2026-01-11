@@ -10,15 +10,15 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
-        configure: (proxy, options) => {
-          proxy.on('error', (err, req, res) => {
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
             console.log('proxy error', err);
           });
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log('Sending Request to the Target:', req.method, req.url);
+          proxy.on('proxyReq', (proxyReq) => {
+            console.log('Sending Request to the Target:', proxyReq.method);
           });
-          proxy.on('proxyRes', (proxyReq, req, res) => {
-            console.log('Received Response from the Target:', proxyReq.statusCode, req.url);
+          proxy.on('proxyRes', (proxyReq) => {
+            console.log('Received Response from the Target:', proxyReq.statusCode);
           });
         },
       },
@@ -26,15 +26,15 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
-        configure: (proxy, options) => {
-          proxy.on('error', (err, req, res) => {
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
             console.log('proxy error', err);
           });
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log('Sending Request to the Target:', req.method, req.url);
+          proxy.on('proxyReq', (proxyReq) => {
+            console.log('Sending Request to the Target:', proxyReq.method);
           });
-          proxy.on('proxyRes', (proxyReq, req, res) => {
-            console.log('Received Response from the Target:', proxyReq.statusCode, req.url);
+          proxy.on('proxyRes', (proxyReq) => {
+            console.log('Received Response from the Target:', proxyReq.statusCode);
           });
         },
       }

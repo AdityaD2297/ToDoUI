@@ -18,6 +18,7 @@ export const Dashboard: React.FC = () => {
     sortBy: 'createdAt',
     direction: 'desc'
   });
+  const [showFilters, setShowFilters] = useState(true);
 
   // Debounced search function
   const debouncedSearch = useCallback(
@@ -149,264 +150,396 @@ export const Dashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-gray-200 rounded-full animate-pulse"></div>
+            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-primary-600 rounded-full animate-spin border-t-transparent"></div>
+          </div>
+          <p className="mt-4 text-sm font-medium text-gray-600">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="bg-white overflow-hidden shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="h-12 w-12 rounded-full bg-primary-600 flex items-center justify-center">
-                <span className="text-white text-lg font-medium">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Section */}
+        <div className="bg-white/80 backdrop-blur-sm shadow-soft rounded-2xl border border-gray-100/50 overflow-hidden">
+          <div className="px-8 py-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl shadow-colored-primary">
+                <span className="text-white text-lg font-bold">
                   {user?.username?.charAt(0)?.toUpperCase()}
                 </span>
               </div>
-            </div>
-            <div className="ml-4">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Welcome, {user?.username}!
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Here's what's happening with your tasks today.
-              </p>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
+                  Welcome back, {user?.username}!
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Here's what's happening with your tasks today.
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
       {/* Filters Section */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Filters</h3>
-            <div className="flex space-x-2">
-              <button
-                onClick={refreshTodos}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              >
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Refresh
-              </button>
+        <div className="bg-white/80 backdrop-blur-sm shadow-soft rounded-2xl border border-gray-100/50 mt-6 overflow-hidden">
+          <div className="px-8 py-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <Filter className="h-5 w-5 text-gray-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">Filters</h3>
+              </div>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={refreshTodos}
+                  className="group inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 transform hover:scale-105"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
+                  Refresh
+                </button>
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="group inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 transform hover:scale-105"
+                >
+                  <Filter className={`h-4 w-4 mr-2 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} />
+                  {showFilters ? 'Hide Filters' : 'Show Filters'}
+                </button>
+              </div>
             </div>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700">
-                Search
-              </label>
-              <input
-                type="text"
-                id="search"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search tasks..."
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              />
-            </div>
+            
+            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+              <div className="space-y-6">
+                {/* Search and Basic Filters */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                  <div>
+                    <label htmlFor="search" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Search Tasks
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        id="search"
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        placeholder="Search tasks..."
+                        className="block w-full border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm px-4 py-3 border transition-all duration-200"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <Filter className="h-4 w-4 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
 
-            <div>
-              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700">
-                Status
-              </label>
-              <select
-                id="status-filter"
-                value={filters.status || ''}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value as any || undefined })}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              >
-                <option value="">All Status</option>
-                <option value="PENDING">Pending</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="COMPLETED">Completed</option>
-              </select>
-            </div>
+                  <div>
+                    <label htmlFor="status-filter" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Status
+                    </label>
+                    <select
+                      id="status-filter"
+                      value={filters.status || ''}
+                      onChange={(e) => setFilters({ ...filters, status: e.target.value as any || undefined })}
+                      className="block w-full border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm px-4 py-3 border transition-all duration-200 cursor-pointer"
+                    >
+                      <option value="">All Status</option>
+                      <option value="PENDING">🔄 Pending</option>
+                      <option value="IN_PROGRESS">⚡ In Progress</option>
+                      <option value="COMPLETED">✅ Completed</option>
+                    </select>
+                  </div>
 
-            <div>
-              <label htmlFor="priority-filter" className="block text-sm font-medium text-gray-700">
-                Priority
-              </label>
-              <select
-                id="priority-filter"
-                value={filters.priority || ''}
-                onChange={(e) => setFilters({ ...filters, priority: e.target.value as any || undefined })}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              >
-                <option value="">All Priority</option>
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-              </select>
-            </div>
+                  <div>
+                    <label htmlFor="priority-filter" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Priority
+                    </label>
+                    <select
+                      id="priority-filter"
+                      value={filters.priority || ''}
+                      onChange={(e) => setFilters({ ...filters, priority: e.target.value as any || undefined })}
+                      className="block w-full border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm px-4 py-3 border transition-all duration-200 cursor-pointer"
+                    >
+                      <option value="">All Priority</option>
+                      <option value="LOW">🟢 Low</option>
+                      <option value="MEDIUM">🟡 Medium</option>
+                      <option value="HIGH">🔴 High</option>
+                    </select>
+                  </div>
 
-            <div>
-              <label htmlFor="completed-filter" className="block text-sm font-medium text-gray-700">
-                Completed
-              </label>
-              <select
-                id="completed-filter"
-                value={filters.completed === undefined ? '' : filters.completed.toString()}
-                onChange={(e) => setFilters({ 
-                  ...filters, 
-                  completed: e.target.value === '' ? undefined : e.target.value === 'true' 
-                })}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              >
-                <option value="">All</option>
-                <option value="true">Yes</option>
-                <option value="false">No</option>
-              </select>
-            </div>
+                  <div>
+                    <label htmlFor="completed-filter" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Completed
+                    </label>
+                    <select
+                      id="completed-filter"
+                      value={filters.completed === undefined ? '' : filters.completed.toString()}
+                      onChange={(e) => setFilters({ 
+                        ...filters, 
+                        completed: e.target.value === '' ? undefined : e.target.value === 'true' 
+                      })}
+                      className="block w-full border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm px-4 py-3 border transition-all duration-200 cursor-pointer"
+                    >
+                      <option value="">All</option>
+                      <option value="true">✅ Yes</option>
+                      <option value="false">❌ No</option>
+                    </select>
+                  </div>
 
-            <div>
-              <label htmlFor="dueDate-filter" className="block text-sm font-medium text-gray-700">
-                Due Date & Time
-              </label>
-              <input
-                type="datetime-local"
-                id="dueDate-filter"
-                value={filters.dueDate ? new Date(filters.dueDate).toISOString().slice(0, 16) : ''}
-                onChange={(e) => setFilters({ 
-                  ...filters, 
-                  dueDate: e.target.value ? new Date(e.target.value).toISOString() : undefined 
-                })}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              />
-            </div>
-          </div>
+                  <div>
+                    <label htmlFor="dueDate-filter" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Due Date & Time
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="datetime-local"
+                        id="dueDate-filter"
+                        value={filters.dueDate ? new Date(filters.dueDate).toISOString().slice(0, 16) : ''}
+                        onChange={(e) => setFilters({ 
+                          ...filters, 
+                          dueDate: e.target.value ? new Date(e.target.value).toISOString() : undefined 
+                        })}
+                        className="block w-full border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm px-4 py-3 border transition-all duration-200"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <Calendar className="h-4 w-4 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={() => {
-                const defaultFilters: TodoFilters = {
-                  page: 0,
-                  size: 10,
-                  sortBy: 'createdAt',
-                  direction: 'desc'
-                };
-                setFilters(defaultFilters);
-                setSearchInput('');
-                setTimeout(() => refreshTodos(), 0);
-              }}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Clear Filters
-            </button>
+                {/* Pagination and Sorting Controls */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <label htmlFor="page-filter" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Page
+                    </label>
+                    <select
+                      id="page-filter"
+                      value={filters.page || 0}
+                      onChange={(e) => setFilters({ ...filters, page: parseInt(e.target.value) })}
+                      className="block w-full border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm px-4 py-3 border transition-all duration-200 cursor-pointer"
+                    >
+                      <option value="0">Page 1</option>
+                      <option value="1">Page 2</option>
+                      <option value="2">Page 3</option>
+                      <option value="3">Page 4</option>
+                      <option value="4">Page 5</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="size-filter" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Items per Page
+                    </label>
+                    <select
+                      id="size-filter"
+                      value={filters.size || 10}
+                      onChange={(e) => setFilters({ ...filters, size: parseInt(e.target.value) })}
+                      className="block w-full border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm px-4 py-3 border transition-all duration-200 cursor-pointer"
+                    >
+                      <option value="5">5 items</option>
+                      <option value="10">10 items</option>
+                      <option value="20">20 items</option>
+                      <option value="50">50 items</option>
+                      <option value="100">100 items</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="sortBy-filter" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Sort By
+                    </label>
+                    <select
+                      id="sortBy-filter"
+                      value={filters.sortBy || 'createdAt'}
+                      onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+                      className="block w-full border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm px-4 py-3 border transition-all duration-200 cursor-pointer"
+                    >
+                      <option value="createdAt">📅 Created Date</option>
+                      <option value="dueDate">⏰ Due Date</option>
+                      <option value="title">📝 Title</option>
+                      <option value="priority">🔴 Priority</option>
+                      <option value="status">📊 Status</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="direction-filter" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Sort Direction
+                    </label>
+                    <select
+                      id="direction-filter"
+                      value={filters.direction || 'desc'}
+                      onChange={(e) => setFilters({ ...filters, direction: e.target.value as 'asc' | 'desc' })}
+                      className="block w-full border-gray-200 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm px-4 py-3 border transition-all duration-200 cursor-pointer"
+                    >
+                      <option value="desc">⬇️ Descending</option>
+                      <option value="asc">⬆️ Ascending</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => {
+                    const defaultFilters: TodoFilters = {
+                      page: 0,
+                      size: 10,
+                      sortBy: 'createdAt',
+                      direction: 'desc'
+                    };
+                    setFilters(defaultFilters);
+                    setSearchInput('');
+                    setTimeout(() => refreshTodos(), 0);
+                  }}
+                  className="inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 transform hover:scale-105"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-primary-100 rounded-full p-3">
-                <TrendingUp className="h-6 w-6 text-primary-600" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dt className="text-lg font-medium text-gray-900 truncate">Total Tasks</dt>
-                <dd className="mt-1 text-3xl font-semibold text-gray-900">{stats.total}</dd>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mt-6">
+          <div className="bg-white/80 backdrop-blur-sm shadow-soft rounded-2xl border border-gray-100/50 overflow-hidden group hover:shadow-medium transition-all duration-300 hover:-translate-y-1">
+            <div className="px-6 py-6">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <TrendingUp className="h-6 w-6 text-primary-600" />
+                </div>
+                <div className="ml-4 w-0 flex-1">
+                  <dt className="text-sm font-semibold text-gray-600 truncate">Total Tasks</dt>
+                  <dd className="mt-1 text-3xl font-bold text-gray-900">{stats.total}</dd>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-green-100 rounded-full p-3">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dt className="text-lg font-medium text-gray-900 truncate">Completed</dt>
-                <dd className="mt-1 text-3xl font-semibold text-gray-900">{stats.completed}</dd>
+          <div className="bg-white/80 backdrop-blur-sm shadow-soft rounded-2xl border border-gray-100/50 overflow-hidden group hover:shadow-medium transition-all duration-300 hover:-translate-y-1">
+            <div className="px-6 py-6">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
+                <div className="ml-4 w-0 flex-1">
+                  <dt className="text-sm font-semibold text-gray-600 truncate">Completed</dt>
+                  <dd className="mt-1 text-3xl font-bold text-gray-900">{stats.completed}</dd>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-yellow-100 rounded-full p-3">
-                <Clock className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dt className="text-lg font-medium text-gray-900 truncate">In Progress</dt>
-                <dd className="mt-1 text-3xl font-semibold text-gray-900">{stats.inProgress}</dd>
+          <div className="bg-white/80 backdrop-blur-sm shadow-soft rounded-2xl border border-gray-100/50 overflow-hidden group hover:shadow-medium transition-all duration-300 hover:-translate-y-1">
+            <div className="px-6 py-6">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <Clock className="h-6 w-6 text-amber-600" />
+                </div>
+                <div className="ml-4 w-0 flex-1">
+                  <dt className="text-sm font-semibold text-gray-600 truncate">In Progress</dt>
+                  <dd className="mt-1 text-3xl font-bold text-gray-900">{stats.inProgress}</dd>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-red-100 rounded-full p-3">
-                <Calendar className="h-6 w-6 text-red-600" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dt className="text-lg font-medium text-gray-900 truncate">Overdue</dt>
-                <dd className="mt-1 text-3xl font-semibold text-gray-900">{stats.overdue}</dd>
+          <div className="bg-white/80 backdrop-blur-sm shadow-soft rounded-2xl border border-gray-100/50 overflow-hidden group hover:shadow-medium transition-all duration-300 hover:-translate-y-1">
+            <div className="px-6 py-6">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-br from-red-100 to-red-200 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <Calendar className="h-6 w-6 text-red-600" />
+                </div>
+                <div className="ml-4 w-0 flex-1">
+                  <dt className="text-sm font-semibold text-gray-600 truncate">Overdue</dt>
+                  <dd className="mt-1 text-3xl font-bold text-gray-900">{stats.overdue}</dd>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
       {/* Recent Tasks */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Recent Tasks</h3>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Task
-            </button>
-          </div>
+        <div className="bg-white/80 backdrop-blur-sm shadow-soft rounded-2xl border border-gray-100/50 mt-6 overflow-hidden">
+          <div className="px-8 py-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <Calendar className="h-5 w-5 text-gray-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">Recent Tasks</h3>
+              </div>
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="group inline-flex items-center px-4 py-2 border-0 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 shadow-colored-primary transition-all duration-300 transform hover:scale-105"
+              >
+                <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
+                New Task
+              </button>
+            </div>
 
           {recentTodos.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-gray-500">
-                <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No tasks yet</h3>
-                <p className="mt-1 text-sm text-gray-500">
+            <div className="text-center py-16">
+              <div className="flex flex-col items-center">
+                <div className="p-4 bg-gray-100 rounded-full mb-4">
+                  <Calendar className="h-12 w-12 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No tasks yet</h3>
+                <p className="text-sm text-gray-500 mb-6 max-w-md">
                   Get started by creating your first task item.
                 </p>
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="inline-flex items-center px-4 py-2 border-0 text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 shadow-colored-primary transition-all duration-300 transform hover:scale-105"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Task
+                </button>
               </div>
             </div>
           ) : (
             <div className="space-y-4">
-              {recentTodos.map((todo) => (
-                <div key={todo.id} className="border-l-4 border-gray-200 pl-4">
+              {recentTodos.map((todo, index) => (
+                <div 
+                  key={todo.id} 
+                  className="group bg-white border border-gray-100 rounded-xl p-6 hover:shadow-medium transition-all duration-300 hover:border-primary-200 hover:-translate-y-1 animate-slide-up"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
-                        {todo.priority}
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${getPriorityColor(todo.priority)}`}>
+                        {todo.priority === 'HIGH' && '🔴'}{todo.priority === 'MEDIUM' && '🟡'}{todo.priority === 'LOW' && '🟢'} {todo.priority}
                       </span>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(todo.status)}`}>
-                        {todo.status}
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(todo.status)}`}>
+                        {todo.status === 'COMPLETED' && '✅'}{todo.status === 'IN_PROGRESS' && '⚡'}{todo.status === 'PENDING' && '🔄'} {todo.status.replace('_', ' ')}
                       </span>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold text-gray-900 truncate group-hover:text-primary-700 transition-colors duration-200">
+                          {todo.title}
+                        </h4>
+                        {todo.description && (
+                          <p className="mt-1 text-sm text-gray-500 line-clamp-2">{todo.description}</p>
+                        )}
+                        {todo.dueDate && (
+                          <div className="flex items-center text-xs text-gray-500 mt-1">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            {format(new Date(todo.dueDate), 'MMM dd, yyyy')}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      {todo.dueDate && format(new Date(todo.dueDate), 'MMM dd, yyyy')}
-                    </span>
-                  </div>
-                  <div className="mt-2">
-                    <p className="text-sm font-medium text-gray-900">{todo.title}</p>
-                    {todo.description && (
-                      <p className="mt-1 text-sm text-gray-500 line-clamp-2">{todo.description}</p>
+                    {todo.completed && (
+                      <div className="ml-3">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -531,6 +664,7 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../store';
-import { fetchTodos, createTodo, updateTodo, deleteTodo, patchTodo, setFilters } from '../store/slices/todoSlice';
-import { Plus, Edit2, Trash2, Filter, Calendar, CheckCircle, X } from 'lucide-react';
+import { fetchTodos, createTodo, deleteTodo, patchTodo } from '../store/slices/todoSlice';
+import { Plus, Edit2, Trash2, Calendar, CheckCircle, X } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Todo, CreateTodoRequest, UpdateTodoRequest } from '../types/todo';
 import { useForm } from 'react-hook-form';
@@ -50,31 +50,6 @@ export const TodoList: React.FC = () => {
   const handleEditTodo = (todo: Todo) => {
     setEditingTodo(todo);
     setShowCreateForm(true);
-  };
-
-  const handleToggleStatus = async (todo: Todo) => {
-    try {
-      const newStatus = todo.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
-      await dispatch(patchTodo({ 
-        id: todo.id, 
-        todo: { status: newStatus } 
-      })).unwrap();
-      toast.success(`Task status updated to ${newStatus}`);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update status');
-    }
-  };
-
-  const handleUpdatePriority = async (todo: Todo, priority: 'LOW' | 'MEDIUM' | 'HIGH') => {
-    try {
-      await dispatch(patchTodo({ 
-        id: todo.id, 
-        todo: { priority } 
-      })).unwrap();
-      toast.success(`Task priority updated to ${priority}`);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update priority');
-    }
   };
 
   const getChangedFields = (formData: Partial<UpdateTodoRequest>, originalTodo: Todo): Partial<UpdateTodoRequest> => {
