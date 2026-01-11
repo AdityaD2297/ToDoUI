@@ -14,11 +14,11 @@ export default defineConfig({
           proxy.on('error', (err) => {
             console.log('proxy error', err);
           });
-          proxy.on('proxyReq', (proxyReq) => {
-            console.log('Sending Request to the Target:', proxyReq.method);
+          proxy.on('proxyReq', () => {
+            console.log('Sending Request to the Target');
           });
-          proxy.on('proxyRes', (proxyReq) => {
-            console.log('Received Response from the Target:', proxyReq.statusCode);
+          proxy.on('proxyRes', () => {
+            console.log('Received Response from the Target');
           });
         },
       },
@@ -30,11 +30,11 @@ export default defineConfig({
           proxy.on('error', (err) => {
             console.log('proxy error', err);
           });
-          proxy.on('proxyReq', (proxyReq) => {
-            console.log('Sending Request to the Target:', proxyReq.method);
+          proxy.on('proxyReq', () => {
+            console.log('Sending Request to the Target');
           });
-          proxy.on('proxyRes', (proxyReq) => {
-            console.log('Received Response from the Target:', proxyReq.statusCode);
+          proxy.on('proxyRes', () => {
+            console.log('Received Response from the Target');
           });
         },
       }
