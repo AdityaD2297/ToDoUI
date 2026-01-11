@@ -70,7 +70,7 @@ export const TodoList: React.FC = () => {
       
       if (formData.status === 'COMPLETED') {
         changed.completed = true;
-      } else if (originalTodo.status === 'COMPLETED' && formData.status !== 'COMPLETED') {
+      } else if (originalTodo.status === 'COMPLETED' && formData.status && formData.status !== 'COMPLETED') {
         changed.completed = false;
       }
     }
