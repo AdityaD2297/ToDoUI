@@ -6,11 +6,14 @@ import axios from "axios";
  * - Handles auth failures globally
  */
 const http = axios.create({
-    baseURL: "/", // Use Vite proxy
+    baseURL: import.meta.env.VITE_API_BASE_URL || "https://todoapi-tcbd.onrender.com",
     headers: {
         "Content-Type": "application/json",
     },
 });
+
+// Debug: Log the actual base URL being used
+console.log("API Base URL:", import.meta.env.VITE_API_BASE_URL);
 
 /**
  * Request interceptor – attach JWT
