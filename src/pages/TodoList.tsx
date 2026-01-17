@@ -126,6 +126,19 @@ export const TodoList: React.FC = () => {
     }
   };
 
+  const isOverdue = (todo: Todo): boolean => {
+    if (!todo.dueDate || todo.completed) {
+      return false;
+    }
+    try {
+      const dueDate = new Date(todo.dueDate);
+      const now = new Date();
+      return dueDate.getTime() < now.getTime();
+    } catch (e) {
+      return false;
+    }
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'HIGH':
@@ -207,7 +220,7 @@ export const TodoList: React.FC = () => {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Task Title
+                    Task Title <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -244,7 +257,7 @@ export const TodoList: React.FC = () => {
 
                 <div>
                   <label htmlFor="status" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Status
+                    Status <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <select
@@ -261,7 +274,7 @@ export const TodoList: React.FC = () => {
 
                 <div>
                   <label htmlFor="priority" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Priority
+                    Priority <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <select
@@ -346,10 +359,16 @@ export const TodoList: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {todos.map((todo, index) => (
+              {todos.map((todo, index) => {
+                const overdue = isOverdue(todo);
+                return (
                 <div 
                   key={todo.id} 
-                  className="group bg-white border border-gray-100 rounded-xl p-6 hover:shadow-medium transition-all duration-300 hover:border-primary-200 hover:-translate-y-1 animate-slide-up"
+                  className={`group rounded-xl p-6 hover:shadow-medium transition-all duration-300 hover:-translate-y-1 animate-slide-up ${
+                    overdue 
+                      ? 'bg-red-50 border-2 border-red-300 hover:border-red-400' 
+                      : 'bg-white border border-gray-100 hover:border-primary-200'
+                  }`}
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex items-start justify-between">
@@ -367,21 +386,39 @@ export const TodoList: React.FC = () => {
                             Done
                           </div>
                         )}
-                        {todo.dueDate && (
+                        {todo.dueDate && String(todo.dueDate).trim() !== '' && (
                           <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200">
                             <Calendar className="h-3 w-3 mr-1.5" />
-                            {format(new Date(todo.dueDate), 'MMM dd, yyyy')}
+                            {(() => {
+                              try {
+                                const date = new Date(todo.dueDate);
+                                if (isNaN(date.getTime())) return 'Invalid date';
+                                return format(date, 'MMM dd, yyyy');
+                              } catch (e) {
+                                return 'Invalid date';
+                              }
+                            })()}
                           </div>
                         )}
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-primary-700 transition-colors duration-200">
                         {todo.title}
                       </h4>
-                      {todo.dueDate && (
+                      {todo.dueDate && String(todo.dueDate).trim() !== '' && (
                         <div className="flex items-center text-sm text-gray-600 mb-2">
                           <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                           <span className="font-medium">Due:</span>
-                          <span className="ml-1">{format(new Date(todo.dueDate), 'MMM dd, yyyy at HH:mm')}</span>
+                          <span className="ml-1">
+                            {(() => {
+                              try {
+                                const date = new Date(todo.dueDate);
+                                if (isNaN(date.getTime())) return 'Invalid date';
+                                return format(date, 'MMM dd, yyyy at HH:mm');
+                              } catch (e) {
+                                return 'Invalid date';
+                              }
+                            })()}
+                          </span>
                         </div>
                       )}
                       {todo.description && (
@@ -406,7 +443,8 @@ export const TodoList: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

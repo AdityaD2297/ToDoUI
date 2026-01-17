@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from '../store';
 import { fetchTodos, createTodo } from '../store/slices/todoSlice';
 import { Plus, Calendar, CheckCircle, Clock, TrendingUp, X, Filter, RotateCcw, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import type { CreateTodoRequest, TodoFilters } from '../types/todo';
+import type { CreateTodoRequest, TodoFilters, Todo } from '../types/todo';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 
@@ -69,11 +69,30 @@ export const Dashboard: React.FC = () => {
     const completed = todos.filter(todo => todo.completed).length;
     const pending = todos.filter(todo => todo.status === 'PENDING').length;
     const inProgress = todos.filter(todo => todo.status === 'IN_PROGRESS').length;
-    const overdue = todos.filter(todo => 
-      todo.dueDate && 
-      new Date(todo.dueDate) < new Date() && 
-      !todo.completed
-    ).length;
+    
+    // Calculate overdue by comparing due date with current local date/time
+    const now = new Date();
+    const currentTime = now.getTime();
+    
+    const overdue = todos.filter(todo => {
+      // Skip if no due date or task is already completed
+      if (!todo.dueDate || todo.completed) {
+        return false;
+      }
+      
+      try {
+        // Parse the due date and compare with current local time
+        const dueDate = new Date(todo.dueDate);
+        const dueDateTime = dueDate.getTime();
+        
+        // Task is overdue if due date/time is in the past (before current time)
+        return dueDateTime < currentTime;
+      } catch (error) {
+        // If date parsing fails, don't count as overdue
+        console.warn('Failed to parse due date:', todo.dueDate, error);
+        return false;
+      }
+    }).length;
 
     setStats({
       total: todos.length,
@@ -106,6 +125,19 @@ export const Dashboard: React.FC = () => {
       refreshTodos(); // Refresh todos after creation
     } catch (error: any) {
       toast.error(error.message || 'Failed to create task');
+    }
+  };
+
+  const isOverdue = (todo: Todo): boolean => {
+    if (!todo.dueDate || todo.completed) {
+      return false;
+    }
+    try {
+      const dueDate = new Date(todo.dueDate);
+      const now = new Date();
+      return dueDate.getTime() < now.getTime();
+    } catch (e) {
+      return false;
     }
   };
 
@@ -525,43 +557,76 @@ export const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {recentTodos.map((todo, index) => (
+              {recentTodos.map((todo, index) => {
+                const overdue = isOverdue(todo);
+                return (
                 <div 
                   key={todo.id} 
-                  className="group bg-white border border-gray-100 rounded-xl p-6 hover:shadow-medium transition-all duration-300 hover:border-primary-200 hover:-translate-y-1 animate-slide-up"
+                  className={`group rounded-xl p-6 hover:shadow-medium transition-all duration-300 hover:-translate-y-1 animate-slide-up ${
+                    overdue 
+                      ? 'bg-red-50 border-2 border-red-300 hover:border-red-400' 
+                      : 'bg-white border border-gray-100 hover:border-primary-200'
+                  }`}
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3 flex-1 min-w-0">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${getPriorityColor(todo.priority)}`}>
-                        {todo.priority === 'HIGH' && '🔴'}{todo.priority === 'MEDIUM' && '🟡'}{todo.priority === 'LOW' && '🟢'} {todo.priority}
-                      </span>
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(todo.status)}`}>
-                        {todo.status === 'COMPLETED' && '✅'}{todo.status === 'IN_PROGRESS' && '⚡'}{todo.status === 'PENDING' && '🔄'} {todo.status.replace('_', ' ')}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-semibold text-gray-900 truncate group-hover:text-primary-700 transition-colors duration-200">
-                          {todo.title}
-                        </h4>
-                        {todo.description && (
-                          <p className="mt-1 text-sm text-gray-500 line-clamp-2">{todo.description}</p>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${getPriorityColor(todo.priority)}`}>
+                          {todo.priority === 'HIGH' && '🔴'}{todo.priority === 'MEDIUM' && '🟡'}{todo.priority === 'LOW' && '🟢'} {todo.priority}
+                        </span>
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(todo.status)}`}>
+                          {todo.status === 'COMPLETED' && '✅'}{todo.status === 'IN_PROGRESS' && '⚡'}{todo.status === 'PENDING' && '🔄'} {todo.status.replace('_', ' ')}
+                        </span>
+                        {todo.completed && (
+                          <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold text-green-700 bg-green-100 border border-green-200">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Done
+                          </div>
                         )}
-                        {todo.dueDate && (
-                          <div className="flex items-center text-xs text-gray-500 mt-1">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {format(new Date(todo.dueDate), 'MMM dd, yyyy')}
+                        {todo.dueDate && String(todo.dueDate).trim() !== '' && (
+                          <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200">
+                            <Calendar className="h-3 w-3 mr-1.5" />
+                            {(() => {
+                              try {
+                                const date = new Date(todo.dueDate);
+                                if (isNaN(date.getTime())) return 'Invalid date';
+                                return format(date, 'MMM dd, yyyy');
+                              } catch (e) {
+                                return 'Invalid date';
+                              }
+                            })()}
                           </div>
                         )}
                       </div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-2 group-hover:text-primary-700 transition-colors duration-200">
+                        {todo.title}
+                      </h4>
+                      {todo.dueDate && String(todo.dueDate).trim() !== '' && (
+                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                          <span className="font-medium">Due:</span>
+                          <span className="ml-1">
+                            {(() => {
+                              try {
+                                const date = new Date(todo.dueDate);
+                                if (isNaN(date.getTime())) return 'Invalid date';
+                                return format(date, 'MMM dd, yyyy at HH:mm');
+                              } catch (e) {
+                                return 'Invalid date';
+                              }
+                            })()}
+                          </span>
+                        </div>
+                      )}
+                      {todo.description && (
+                        <p className="text-sm text-gray-500 line-clamp-2">{todo.description}</p>
+                      )}
                     </div>
-                    {todo.completed && (
-                      <div className="ml-3">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                      </div>
-                    )}
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           )}
         </div>
@@ -596,7 +661,7 @@ export const Dashboard: React.FC = () => {
                   <div className="space-y-4">
                     <div>
                       <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                        Title
+                        Title <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -626,7 +691,7 @@ export const Dashboard: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
-                          Priority
+                          Priority <span className="text-red-500">*</span>
                         </label>
                         <select
                           id="priority"
@@ -641,7 +706,7 @@ export const Dashboard: React.FC = () => {
 
                       <div>
                         <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-                          Status
+                          Status <span className="text-red-500">*</span>
                         </label>
                         <select
                           id="status"
