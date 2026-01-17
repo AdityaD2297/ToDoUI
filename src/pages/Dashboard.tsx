@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useAppSelector, useAppDispatch } from '../store';
 import { fetchTodos, createTodo } from '../store/slices/todoSlice';
-import { Plus, Calendar, CheckCircle, Clock, TrendingUp, X, Filter, RotateCcw } from 'lucide-react';
+import { Plus, Calendar, CheckCircle, Clock, TrendingUp, X, Filter, RotateCcw, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { CreateTodoRequest, TodoFilters } from '../types/todo';
 import { useForm } from 'react-hook-form';
@@ -65,24 +65,23 @@ export const Dashboard: React.FC = () => {
   }, [filters, dispatch, user?.id]); // Run when filters or user changes
 
   useEffect(() => {
-    if (todos.length > 0) {
-      const completed = todos.filter(todo => todo.completed).length;
-      const pending = todos.filter(todo => todo.status === 'PENDING').length;
-      const inProgress = todos.filter(todo => todo.status === 'IN_PROGRESS').length;
-      const overdue = todos.filter(todo => 
-        todo.dueDate && 
-        new Date(todo.dueDate) < new Date() && 
-        !todo.completed
-      ).length;
+    // Calculate stats dynamically based on filtered todos
+    const completed = todos.filter(todo => todo.completed).length;
+    const pending = todos.filter(todo => todo.status === 'PENDING').length;
+    const inProgress = todos.filter(todo => todo.status === 'IN_PROGRESS').length;
+    const overdue = todos.filter(todo => 
+      todo.dueDate && 
+      new Date(todo.dueDate) < new Date() && 
+      !todo.completed
+    ).length;
 
-      setStats({
-        total: todos.length,
-        completed,
-        pending,
-        inProgress,
-        overdue,
-      });
-    }
+    setStats({
+      total: todos.length,
+      completed,
+      pending,
+      inProgress,
+      overdue,
+    });
   }, [todos]);
 
   const recentTodos = todos.slice(0, 5);
@@ -95,7 +94,12 @@ export const Dashboard: React.FC = () => {
 
   const handleCreateTodo = async (data: CreateTodoRequest) => {
     try {
-      await dispatch(createTodo(data)).unwrap();
+      // Convert datetime-local format to ISO string
+      const todoData: CreateTodoRequest = {
+        ...data,
+        dueDate: data.dueDate && data.dueDate.trim() ? new Date(data.dueDate).toISOString() : undefined,
+      };
+      await dispatch(createTodo(todoData)).unwrap();
       toast.success('Task created successfully!');
       setShowCreateForm(false);
       reset();
@@ -409,7 +413,7 @@ export const Dashboard: React.FC = () => {
         </div>
 
       {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mt-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 mt-6">
           <div className="bg-white/80 backdrop-blur-sm shadow-soft rounded-2xl border border-gray-100/50 overflow-hidden group hover:shadow-medium transition-all duration-300 hover:-translate-y-1">
             <div className="px-6 py-6">
               <div className="flex items-center">
@@ -433,6 +437,20 @@ export const Dashboard: React.FC = () => {
                 <div className="ml-4 w-0 flex-1">
                   <dt className="text-sm font-semibold text-gray-600 truncate">Completed</dt>
                   <dd className="mt-1 text-3xl font-bold text-gray-900">{stats.completed}</dd>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm shadow-soft rounded-2xl border border-gray-100/50 overflow-hidden group hover:shadow-medium transition-all duration-300 hover:-translate-y-1">
+            <div className="px-6 py-6">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <AlertCircle className="h-6 w-6 text-yellow-600" />
+                </div>
+                <div className="ml-4 w-0 flex-1">
+                  <dt className="text-sm font-semibold text-gray-600 truncate">Pending</dt>
+                  <dd className="mt-1 text-3xl font-bold text-gray-900">{stats.pending}</dd>
                 </div>
               </div>
             </div>
@@ -646,6 +664,7 @@ export const Dashboard: React.FC = () => {
                         id="dueDate"
                         {...register('dueDate')}
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                        defaultValue=""
                       />
                     </div>
                   </div>

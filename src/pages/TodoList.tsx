@@ -29,7 +29,12 @@ export const TodoList: React.FC = () => {
 
   const handleCreateTodo = async (data: CreateTodoRequest) => {
     try {
-      await dispatch(createTodo(data)).unwrap();
+      // Convert datetime-local format to ISO string
+      const todoData: CreateTodoRequest = {
+        ...data,
+        dueDate: data.dueDate && data.dueDate.trim() ? new Date(data.dueDate).toISOString() : undefined,
+      };
+      await dispatch(createTodo(todoData)).unwrap();
       toast.success('Task created successfully!');
       setShowCreateForm(false);
       reset();
@@ -79,10 +84,15 @@ export const TodoList: React.FC = () => {
       changed.priority = formData.priority;
     }
     
-    const formDate = formData.dueDate?.trim() || undefined;
-    const origDate = originalTodo.dueDate?.trim() || undefined;
-    if (formData.dueDate !== undefined && formDate !== origDate) {
-      changed.dueDate = formData.dueDate;
+    // Handle dueDate conversion from datetime-local to ISO
+    if (formData.dueDate !== undefined) {
+      const formDate = formData.dueDate.trim() || undefined;
+      const formDateISO = formDate && formDate.length > 0 ? new Date(formDate).toISOString() : undefined;
+      const origDate = originalTodo.dueDate?.trim() || undefined;
+      
+      if (formDateISO !== origDate) {
+        changed.dueDate = formDateISO;
+      }
     }
     
     return changed;
@@ -274,7 +284,7 @@ export const TodoList: React.FC = () => {
                     <input
                       {...register('dueDate')}
                       type="datetime-local"
-                      defaultValue={editingTodo?.dueDate || ''}
+                      defaultValue={editingTodo?.dueDate ? new Date(editingTodo.dueDate).toISOString().slice(0, 16) : ''}
                       className="block w-full appearance-none rounded-xl border border-gray-200 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-200"
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -357,18 +367,25 @@ export const TodoList: React.FC = () => {
                             Done
                           </div>
                         )}
+                        {todo.dueDate && (
+                          <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200">
+                            <Calendar className="h-3 w-3 mr-1.5" />
+                            {format(new Date(todo.dueDate), 'MMM dd, yyyy')}
+                          </div>
+                        )}
                       </div>
                       <h4 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-primary-700 transition-colors duration-200">
                         {todo.title}
                       </h4>
+                      {todo.dueDate && (
+                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                          <span className="font-medium">Due:</span>
+                          <span className="ml-1">{format(new Date(todo.dueDate), 'MMM dd, yyyy at HH:mm')}</span>
+                        </div>
+                      )}
                       {todo.description && (
                         <p className="text-sm text-gray-600 mb-3 line-clamp-2">{todo.description}</p>
-                      )}
-                      {todo.dueDate && (
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                          <span className="font-medium">Due:</span> {format(new Date(todo.dueDate), 'MMM dd, yyyy at HH:mm')}
-                        </div>
                       )}
                     </div>
                     <div className="flex items-center space-x-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
